@@ -716,9 +716,12 @@ def render_sidebar_meta(row_count: int):
     <div class="rai-hr"></div>
     <div class="rai-meta" style="text-align:center; font-size:0.7rem;">
         <div style="color:var(--rai-text-muted); line-height:1.6;">
-            Built by <b style="color:var(--rai-primary);">Pacifique TUYIZERE</b><br>
+            Built by<br>
+            <b style="color:var(--rai-primary);">Pacifique TUYIZERE</b><br>
+            <b style="color:var(--rai-primary);">Herve MUSABYIMANA</b><br>
             for the <b style="color:var(--rai-primary);">NISR Big Data<br>Hackathon 2026</b>
         </div>
+
         <div style="color:var(--rai-text-muted); margin-top:8px; font-size:0.65rem;
                     letter-spacing:0.05em;">
             Data © NISR SAS 2025
