@@ -1,3 +1,6 @@
+"""
+National Overview page — national map, KPI summary, crop ranking.
+"""
 import streamlit as st
 import plotly.express as px
 
@@ -11,6 +14,36 @@ def render(prod, signals, feat_imp, district_shap):
     scale = get_scale()
     dark = st.session_state.get("theme_mode", "light") == "dark"
 
+    # =============================================================
+    # LANDING HERO
+    # =============================================================
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, var(--rai-pale) 0%, var(--rai-insight-end) 100%);
+                border-radius: 16px;
+                padding: 28px 32px;
+                margin-bottom: 24px;
+                border-left: 5px solid var(--rai-accent);">
+        <div style="font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+                    color: var(--rai-accent); margin-bottom: 8px;">
+            NISR BIG DATA HACKATHON 2026 · TRACK 1
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: var(--rai-primary);
+                    letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 10px;">
+            Turning Rwanda's agricultural microdata into district-level intelligence.
+        </div>
+        <div style="font-size: 0.95rem; color: var(--rai-text); line-height: 1.6;
+                    max-width: 900px;">
+            This tool joins NISR SAS 2025 microdata with XGBoost and SHAP to reveal
+            <b style="color: var(--rai-primary);">where</b> productivity gaps occur,
+            <b style="color: var(--rai-primary);">why</b> they happen, and
+            <b style="color: var(--rai-primary);">where</b> field investigation should start.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # =============================================================
+    # PAGE HEADER
+    # =============================================================
     page_header(
         "National Overview",
         "Rwanda · SAS 2025 · 30 districts · 21 crops · 3 seasons",
@@ -18,13 +51,24 @@ def render(prod, signals, feat_imp, district_shap):
     )
     st.markdown("---")
 
+    # =============================================================
+    # KPI ROW
+    # =============================================================
     c1, c2, c3, c4 = st.columns(4, gap="medium")
-    with c1: kpi_card("Districts", str(prod["district"].nunique()))
-    with c2: kpi_card("Crops Analyzed", str(prod["crop_category"].nunique()))
-    with c3: kpi_card("Observations", f"{len(prod):,}")
-    with c4: kpi_card("Model R²", "0.87", accent=p["primary"])
+    with c1:
+        kpi_card("Districts", str(prod["district"].nunique()))
+    with c2:
+        kpi_card("Crops Analyzed", str(prod["crop_category"].nunique()))
+    with c3:
+        kpi_card("Observations", f"{len(prod):,}")
+    with c4:
+        kpi_card("Model R²", "0.87", accent=p["primary"])
 
     st.markdown("---")
+
+    # =============================================================
+    # PRODUCTIVITY MAP
+    # =============================================================
     st.markdown("## Productivity Map — Average Yield by District")
     st.caption("Colour intensity = average weighted yield across all crops and seasons")
 
@@ -36,7 +80,7 @@ def render(prod, signals, feat_imp, district_shap):
 
     geojson = load_rwanda_geojson()
     if geojson:
-        # Auto-detect name property
+        # Auto-detect name property in the GeoJSON
         sample_props = geojson["features"][0]["properties"]
         name_field = next(
             (k for k in sample_props.keys()
@@ -61,7 +105,8 @@ def render(prod, signals, feat_imp, district_shap):
                 labels={"avg_yield": "Avg yield (MT/ha)"},
             )
             fig.update_layout(
-                height=580, margin=dict(r=0, t=0, l=0, b=0),
+                height=580,
+                margin=dict(r=0, t=0, l=0, b=0),
                 coloraxis_colorbar=dict(title="MT/ha", thickness=12),
             )
             apply_plotly_theme(fig)
@@ -69,6 +114,7 @@ def render(prod, signals, feat_imp, district_shap):
         else:
             st.info("Could not detect district name field in GeoJSON.")
     else:
+        # Fallback: bar chart if GeoJSON is unavailable
         top = district_avg.sort_values("avg_yield", ascending=False)
         fig = px.bar(
             top, x="avg_yield", y="district", orientation="h",
@@ -79,6 +125,10 @@ def render(prod, signals, feat_imp, district_shap):
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
+
+    # =============================================================
+    # CROP YIELD RANKING
+    # =============================================================
     st.markdown("## Crop Yield Ranking")
 
     crop_summary = (
@@ -95,7 +145,8 @@ def render(prod, signals, feat_imp, district_shap):
         labels={"avg_yield": "Avg yield (MT/ha)", "crop_category": ""},
     )
     fig.update_layout(
-        height=560, showlegend=False,
+        height=560,
+        showlegend=False,
         yaxis=dict(autorange="reversed"),
     )
     apply_plotly_theme(fig)

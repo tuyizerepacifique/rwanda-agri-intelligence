@@ -14,7 +14,7 @@ from src.theme import (
     render_theme_toggle,
 )
 from src.data_loader import load_all
-from src.pages import national, district, signals, methodology
+from src.pages import national, district, signals, methodology, about
 
 # ===================================================================
 # PAGE CONFIG
@@ -41,6 +41,7 @@ with st.sidebar:
             "District Intelligence",
             "Intervention Signals",
             "Model & Methodology",
+            "About & Documentation",
         ],
         label_visibility="collapsed",
         key="main_nav",
@@ -71,6 +72,7 @@ routes = {
     "District Intelligence": (district.render,    (prod, signals_df, feat_imp, district_shap)),
     "Intervention Signals":  (signals.render,     (prod, signals_df, feat_imp, district_shap)),
     "Model & Methodology":   (methodology.render, (prod, signals_df, feat_imp, district_shap)),
+    "About & Documentation": (about.render,       (prod, signals_df, feat_imp, district_shap)),
 }
 
 render_fn, args = routes[page]

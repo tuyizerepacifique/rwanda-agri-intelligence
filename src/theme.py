@@ -605,6 +605,48 @@ hr {{
     border-top: 1px solid var(--rai-border);
     margin: 20px 0;
 }}
+
+/* ===================================================== */
+/* DOWNLOAD BUTTON                                        */
+/* ===================================================== */
+.stDownloadButton > button,
+[data-testid="stDownloadButton"] > button {{
+    background: var(--rai-bg-card) !important;
+    color: var(--rai-primary) !important;
+    border: 1px solid var(--rai-border) !important;
+    border-radius: 10px !important;
+    padding: 10px 18px !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    box-shadow: 0 1px 3px var(--rai-shadow) !important;
+    transition: all 0.15s ease !important;
+}}
+.stDownloadButton > button:hover,
+[data-testid="stDownloadButton"] > button:hover {{
+    background: var(--rai-pale) !important;
+    color: var(--rai-primary) !important;
+    border-color: var(--rai-light) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px var(--rai-shadow) !important;
+}}
+.stDownloadButton > button:focus,
+[data-testid="stDownloadButton"] > button:focus {{
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--rai-pale) !important;
+}}
+.stDownloadButton > button:active,
+[data-testid="stDownloadButton"] > button:active {{
+    background: var(--rai-light) !important;
+    color: var(--rai-primary) !important;
+    transform: translateY(0) !important;
+}}
+.stDownloadButton > button p,
+[data-testid="stDownloadButton"] > button p,
+.stDownloadButton > button span,
+[data-testid="stDownloadButton"] > button span {{
+    color: inherit !important;
+    font-weight: inherit !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -670,6 +712,17 @@ def render_sidebar_meta(row_count: int):
         </div>
         <div class="rai-meta-h">TRACK</div>
         <div>Track 1: Agricultural<br>Productivity</div>
+    </div>
+    <div class="rai-hr"></div>
+    <div class="rai-meta" style="text-align:center; font-size:0.7rem;">
+        <div style="color:var(--rai-text-muted); line-height:1.6;">
+            Built by <b style="color:var(--rai-primary);">Pacifique TUYIZERE</b><br>
+            for the <b style="color:var(--rai-primary);">NISR Big Data<br>Hackathon 2026</b>
+        </div>
+        <div style="color:var(--rai-text-muted); margin-top:8px; font-size:0.65rem;
+                    letter-spacing:0.05em;">
+            Data © NISR SAS 2025
+        </div>
     </div>
     """
     st.markdown(_flatten(html), unsafe_allow_html=True)
