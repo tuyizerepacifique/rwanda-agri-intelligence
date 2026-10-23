@@ -2,70 +2,42 @@
 
 **NISR Big Data Hackathon 2026 · Track 1: Agricultural Productivity**
 
-A decision-support platform that turns NISR's Seasonal Agricultural Survey (SAS) microdata into
-district-level productivity intelligence for Rwandan agriculture.
-
----
+**[Watch the 3-minute Demo Video here](demo/demo.mp4)**
 
 ## The Problem
 
-NISR publishes the Seasonal Agricultural Survey every year. It is rich, reliable, and well-designed.
-But as published, it is a set of statistical tables, not a decision tool.
+NISR publishes the Seasonal Agricultural Survey (SAS) every year. The data is rich, reliable, and incredibly detailed. But it is published as hundreds of pages of statistical tables. It is not a decision tool.
 
-A district agricultural officer reading the SAS 2025 report can see how much maize Kayonza produced.
-What they cannot easily see is:
-
+A district agricultural officer reading the SAS 2025 report can see exactly how much maize Kayonza produced. What they cannot easily see is:
 - Is Kayonza's maize yield *normal* for the inputs and practices used there?
-- Which districts are producing significantly below what their crop, season, and practices suggest?
+- Which districts are producing significantly below what their crop, season, and soil suggest?
 - Of those, which cases are worth sending a field officer to investigate first?
 
-This project answers those three questions, and others.
-
----
+This project was built to answer those three questions.
 
 ## The Solution
 
-**Rwanda Agricultural Intelligence (RAI)** does four things:
+**Rwanda Agricultural Intelligence (RAI)** turns raw data into action. It does four things:
 
-1. **Joins and cleans** SAS microdata — production, agricultural practices, and
-   fertilizer/pesticide files — using plot-level identifiers and survey weights.
-2. **Trains an XGBoost model** that predicts expected yield from crop, season, inputs,
-   and farming practices.
-3. **Compares expected vs observed yield** at district × crop × season level to identify
-   productivity gaps, using the national median as a benchmark.
-4. **Explains each gap with SHAP** — showing which local factors (irrigation, fertilizer,
-   erosion control, crop choice) push a district above or below its expected yield.
+1. **Joins and cleans** SAS microdata (Production, Agricultural Practices, Fertilizer/Pesticide) using plot-level identifiers and NISR's official survey weights.
+2. **Trains an XGBoost model** to predict the *expected yield* based on the crop, season, and farming inputs.
+3. **Compares expected vs. observed yield** at the district × crop × season level to find productivity gaps against the national median.
+4. **Explains the gaps using SHAP** — revealing which local factors (like lack of fertilizer, poor erosion control, or irrigation) are dragging yields down.
 
-The output is a working web application with four views: a national map, a district drill-down,
-a ranked intervention list, and full methodology transparency.
+The output is a working web app that gives policymakers a national map, a district drill-down, a ranked intervention list, and full transparency on the model.
 
----
+## The Data
 
-## Data
+We used the NISR SAS 2025 microdata. Our final analytical dataset contains **62,497 clean plot observations** spanning all 30 districts, 21 major crops, and 3 seasons.
 
-**Source:** NISR SAS 2025 microdata (Screening, Production, Agricultural Practice, Fertilizer/Pesticide).
+**A Note on 2024:** We initially tested the 2024 data. However, the 2024 production files used legacy variable codes for harvested area and quantity that could not be reliably decoded without the specific 2024 codebook. To protect data integrity, we made the deliberate choice to use the 100% verified 2025 data. We prioritized accuracy over having two years of broken data. 
 
-| File type | Records used | Content |
-|---|---|---|
-| Production | ~34,000 | Crop, cultivated area, harvested area, production |
-| Agricultural Practice | ~17,000 | Erosion control, irrigation, agroforestry |
-| Fertilizer / Pesticide | ~17,000 | Organic, inorganic, pesticide use |
-| **Analytical dataset** | **62,497 clean rows** | Joined, weighted, outlier-trimmed |
-
-**Coverage:** All 30 districts · 21 major crops · 3 agricultural seasons (A, B, C).
-
-**Note on year coverage:** The system currently uses SAS 2025 only. SAS 2024 production files
-use different variable codes for harvested area and quantity, and could not be reliably decoded
-without the corresponding questionnaire codebook. We chose to use one fully-verified year rather
-than two partially-decoded years.
+**Data Access:** The raw microdata can be requested here: [NISR Microdata Catalog - SAS 2025](https://microdata.statistics.rw/index.php/catalog/124)
 
 **Methodology:**
-- NISR's `plot_weight` is applied to every aggregation.
-- Yield outliers trimmed to the 1st–99th percentile **per crop**.
-- District × crop × season groups with fewer than 5 plots are excluded from ranked signals
-  (they remain in the national analysis).
-
----
+- NISR's `plot_weight` is applied to every single aggregation to ensure national representativeness.
+- Yield outliers are trimmed to the 1st–99th percentile per crop.
+- To avoid drawing conclusions from tiny sample sizes, district × crop groups with fewer than 5 plots are excluded from the ranked intervention signals.
 
 ## The Model
 
@@ -74,9 +46,7 @@ than two partially-decoded years.
 | Algorithm | XGBoost Regressor |
 | Trees / depth / LR | 300 / 6 / 0.05 |
 | Target | `log(1 + yield_mt_ha)` |
-| Sample weights | NISR `plot_weight` |
-| Features | Crop, season, irrigation, erosion control, agroforestry, organic and inorganic fertilizer, pesticide use, crop system |
-| Train / test split | 80% / 20% |
+| Features | Crop, season, irrigation, erosion control, agroforestry, fertilizer types, pesticides |
 
 | Metric | Value |
 |---|---|
@@ -84,146 +54,82 @@ than two partially-decoded years.
 | RMSE | 0.3441 |
 | MAE | 0.2437 |
 
-The model is not the point — it is a tool. Its job is to give a defensible, weighted
-"expected yield" baseline against which actual district performance can be compared.
-SHAP then attributes each deviation to specific features, producing explanations that
-RAB extension officers and MINAGRI planners can act on.
-
----
+The model is just a tool. Its job is to give a defensible, weighted "expected yield" baseline. SHAP then attributes each deviation to specific features, giving RAB extension officers explanations they can actually act on.
 
 ## The Application
 
-Four pages, one purpose — from national picture to local action:
+Four pages, one purpose — from the national picture to local action:
 
-1. **National Overview** — Choropleth map of weighted yield by district, crop-level rankings.
-
-2. **District Intelligence** — Pick any district and crop: see yield vs national median by season, input adoption rates, and SHAP-based driver attribution ("why is this district different?").
-
-3. **Intervention Signals** — Ranked list of district × crop × season combinations more than 25% below the national median, with plot counts, so RAB can prioritize field investigations.
-
-4. **Model & Methodology** — Full disclosure of the pipeline, features, weights, and metrics.
-
----
+1. **National Overview:** A choropleth map of weighted yield by district, alongside a national crop ranking.
+2. **District Intelligence:** Pick any district and crop to see yield vs. the national median by season, input adoption rates, and SHAP driver attribution ("Why is this district different?").
+3. **Intervention Signals:** A ranked list of district × crop combinations that are more than 25% below the national median, with a CSV export button for field officers.
+4. **Model & Methodology:** Full disclosure of the pipeline and metrics.
 
 ## Technology Stack
-
-| Layer | Tools |
-|---|---|
-| Data pipeline | Python, pandas, numpy, pyarrow |
-| Machine learning | XGBoost, scikit-learn |
-| Explainability | SHAP |
-| Visualization | Plotly, MapLibre (via Plotly) |
-| Web framework | Streamlit |
-| Deployment | Streamlit Community Cloud |
-| Version control | GitHub |
-
----
+- **Data:** Python, pandas, numpy, pyarrow
+- **Machine Learning:** XGBoost, scikit-learn
+- **Explainability:** SHAP
+- **Visualization & UI:** Plotly, MapLibre, Streamlit
+- **Deployment:** Streamlit Community Cloud & GitHub
 
 ## Repository Layout
 
+```text
 rwanda-agri-intelligence/
-├── app.py # Streamlit entry point
+├── app.py                  # Streamlit entry point
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-├── scripts/
-│ ├── ingest.py # Joins raw SAS files
-│ ├── analyze.py # Trains model + computes SHAP
-│ └── fix_districts.py # Normalizes to 30 canonical districts
-├── src/
-│ ├── theme.py # Palette, fonts, CSS
-│ ├── components.py # Reusable UI pieces
-│ ├── data_loader.py # Cached data loading
-│ └── pages/
-│ ├── national.py
-│ ├── district.py
-│ ├── signals.py
-│ └── methodology.py
-├── processed_data/
-│ ├── sas_analytical.parquet
-│ ├── district_crop_productivity.parquet
-│ ├── productivity_gap_signals.csv
-│ ├── feature_importance.csv
-│ └── district_shap_drivers.parquet
-├── assets/
-│ └── logo.svg
-└── raw_data/ # NISR microdata (gitignored)
-
----
-
-## Running Locally
-
+├── scripts/                # Data and ML pipelines
+├── src/                    # Modular app code (theme, components, pages)
+├── data/                   # Processed parquet & csv files
+├── demo/
+│   └── demo.mp4            # 3-minute screen recording
+└── assets/                 # Logos
+Running Locally
 Requires Python 3.10+.
 
-```bash
-git clone https://github.com/YOUR_USERNAME/rwanda-agri-intelligence.git
+bash
+git clone https://github.com/tuyizerepacifique/rwanda-agri-intelligence.git
 cd rwanda-agri-intelligence
 pip install -r requirements.txt
 streamlit run app.py
 Then open http://localhost:8501.
 
----
+Key Findings
+1,265 distinct district × crop × season groups analyzed.
 
-**Results**
+122 under-performing signals identified (< −25% gap).
 
-What we found   |	Value
-- Districts analyzed	 |  30
-- Crops analyzed	 |  21
-- Observations with valid yield	|  62,497
-- District × crop × season groups	|  1,265
-- Under-performing signals (< −25%)	|  122
-- Over-performing signals (> +25%)	|  263
+263 over-performing signals identified (> +25% gap).
 
-=> A concrete example: Kayonza's fodder crops in Season B produced 83.5% below the
-national median for the same crop and season — despite 100% erosion control adoption and
-80% organic fertilizer use. That mismatch is exactly what a decision-support tool should
-surface: inputs are in place, but output is not following. Worth a field visit.
+Concrete Example: Kayonza's fodder crops in Season B produced 83.5% below the national median. Yet, the data shows 100% erosion control adoption and 80% organic fertilizer use in that area. Inputs are in place, but output is not following. This mismatch is exactly what our tool surfaces for a field visit.
 
+Alignment with NISR Hackathon 2026 Criteria
+Problem Understanding: Directly targets Track 1 by answering where, why, and what next for agricultural gaps.
 
-**Alignment with NISR Hackathon 2026 Criteria**
+Data & Methodology: Uses official microdata with proper survey weighting, rigorous cleaning, and ML.
 
-Criterion	|  How this project responds
-- Problem Understanding   |	Directly targets Track 1: where, why, and what next for agricultural productivity gaps.
+Tech Innovation: Combines XGBoost with SHAP explainability in one geospatial tool.
 
-- Data Use & Methodology  | 	Uses official NISR SAS microdata with proper survey weighting; joins multiple files; applies rigorous statistical and ML methods.
+Usability: Clean, map-driven UI designed for non-technical policymakers.
 
-- Tech Innovation 	|  Combines XGBoost with SHAP explainability and geospatial visualization in a single interactive tool.
+Tangible Impact: Produces a ranked, actionable list for RAB and MINAGRI.
 
-- Usability & Design  |	Clean, focused UI; map-driven navigation; drill-downs designed for non-technical users.
+AI Use Disclosure
+In accordance with the hackathon rules, we disclose the following:
 
-- Tangible Impact  |	Produces a ranked, actionable list for RAB extension officers and MINAGRI planners.
+AI tools (Claude, ChatGPT) were used as coding assistants for boilerplate, debugging syntax errors, and drafting documentation.
 
+All substantive analytical work was done by the team: data selection, sample weighting strategy, model choice/hyperparameters, outlier treatment, SHAP interpretation, and every analytical decision.
 
+No data was generated or fabricated by AI. All results come from the NISR SAS 2025 microdata.
 
-*AI Use Disclosure**
-
-In accordance with the hackathon's rules on AI assistance, we disclose the following:
-
-- AI tools (Anthropic's Claude, OpenAI's ChatGPT) were used as coding assistants for
-boilerplate, debugging syntax errors, and drafting some files.
-
-- All substantive work was done by the team: data selection, sample weighting strategy,
-model choice and hyperparameters, outlier treatment, SHAP interpretation, feature engineering,
-and every analytical decision.
-
-- No data was generated or fabricated by AI. All results come from the NISR SAS 2025
-microdata.
-
-- Every line of code was reviewed and tested by the team before being used in the pipeline.
-
-
-
-
-
-**[Watch the 3-minute Demo Video here](demo/demo.mp4)**
-
+Every line of code was reviewed, tested, and verified by the team.
 
 Authors
+Pacifique TUYIZERE and Herve MUSABYIMANA
+NISR Big Data Hackathon 2026, Track 1: Agricultural Productivity
 
-- Pacifique TUYIZERE and Herve MUSABYIMANA — NISR Big Data Hackathon 2026, Track 1: Agricultural Productivity
-
-
-**Data Source**
-
-National Institute of Statistics of Rwanda (NISR), Seasonal Agricultural Survey 2025.
-Official microdata accessed via the NISR Central Data Catalog.
+Data Source
+National Institute of Statistics of Rwanda (NISR), Seasonal Agricultural Survey 2025. Official microdata accessed via the NISR Central Data Catalog.
