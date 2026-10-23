@@ -32,7 +32,7 @@ We used the NISR SAS 2025 microdata. Our final analytical dataset contains **62,
 
 **A Note on 2024:** We initially tested the 2024 data. However, the 2024 production files used legacy variable codes for harvested area and quantity that could not be reliably decoded without the specific 2024 codebook. To protect data integrity, we made the deliberate choice to use the 100% verified 2025 data. We prioritized accuracy over having two years of broken data. 
 
-**Data Access:** The raw microdata can be requested here: [NISR Microdata Catalog - SAS 2025](https://microdata.statistics.rw/index.php/catalog/124)
+**Data Access:** The raw microdata can be requested here: [NISR Microdata Catalog - SAS 2025](https://microdata.statistics.gov.rw/index.php/catalog/124)
 
 **Methodology:**
 - NISR's `plot_weight` is applied to every single aggregation to ensure national representativeness.
